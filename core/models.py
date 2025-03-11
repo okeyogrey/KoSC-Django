@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -15,8 +16,15 @@ class Product(models.Model):
     stock = models.PositiveIntegerField()
     is_on_sale = models.BooleanField(default=False)
     discount_percentage = models.PositiveIntegerField(null=True, blank=True)
+    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
+
+    def image_tag(self):
+        if self.image:
+            return mark_safe(f'<img src="{self.image.url}" width="50" height="50"/>')
+        return "No Image"
+    
+    image_tag.short_description = 'Image'
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='products/')
 
     def __str__(self):
         return self.name
