@@ -8,7 +8,5 @@ router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'brands', BrandViewSet, basename='brand')
 router.register(r'products', ProductViewSet, basename='product')
 
-# Define the URL patterns
-urlpatterns = [
-    path('api/', include(router.urls)),  # Include all registered API endpoints
-]
+# Correct URL patterns without the extra 'api/' prefix
+urlpatterns = router.urls

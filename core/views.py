@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Category, Product, Brand
 from .serializers import CategorySerializer, ProductSerializer, UserSerializer, BrandSerializer
 from django.contrib.auth.models import User
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import ProductFilter
 
 # Category ViewSet - Shows only main categories with their subcategories
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -23,6 +25,8 @@ class BrandViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.select_related('category', 'brand').all()
     serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductFilter
 
 # User Registration View - Handles new user registration
 class RegisterView(generics.CreateAPIView):

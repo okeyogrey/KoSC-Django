@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     # Other apps
     'rest_framework_simplejwt',
     'djoser',
+
+     # Existing apps...
+    'django_filters',
 ]
 
 REST_FRAMEWORK = {

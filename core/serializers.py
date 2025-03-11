@@ -10,9 +10,9 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'parent', 'subcategories']
 
     def get_subcategories(self, obj):
-        subcategories = Category.objects.filter(parent=obj)
+        """Retrieve only direct child categories for better hierarchy control."""
+        subcategories = obj.category_set.all()  # Better than querying the entire Category model
         return CategorySerializer(subcategories, many=True).data
-        
 
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,6 +22,7 @@ class BrandSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     brand = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.all())
+    image = serializers.ImageField(use_url=True)  # Ensures full URL is returned
 
     class Meta:
         model = Product
@@ -31,16 +32,17 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)  # Ensures password is write-only
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        user = User(
+        """Ensures secure password handling with `set_password()` method."""
+        user = User.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email']
+            email=validated_data['email'],
+            password=validated_data['password']  # `create_user` securely hashes the password
         )
-        user.set_password(validated_data['password'])  # Ensures password is hashed securely
-        user.save()
         return user
