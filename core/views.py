@@ -23,7 +23,7 @@ class BrandViewSet(viewsets.ModelViewSet):
 
 # Product ViewSet - Optimized for better performance
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related('category', 'brand').all()
+    queryset = Product.objects.select_related('category', 'brand').prefetch_related('reviews').all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductFilter
