@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Category, Product, Brand
+from .models import Category, Product, Brand, Review
 
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = serializers.SerializerMethodField()
@@ -46,3 +46,10 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']  # `create_user` securely hashes the password
         )
         return user
+
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'product', 'user', 'rating', 'comment', 'created_at']

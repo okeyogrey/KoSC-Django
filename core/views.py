@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
-from .models import Category, Product, Brand
-from .serializers import CategorySerializer, ProductSerializer, UserSerializer, BrandSerializer
+from .models import Category, Product, Brand, Review
+from .serializers import CategorySerializer, ProductSerializer, UserSerializer, BrandSerializer, ReviewSerializer
 from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter
@@ -32,3 +32,13 @@ class ProductViewSet(viewsets.ModelViewSet):
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all().order_by('-created_at')
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
