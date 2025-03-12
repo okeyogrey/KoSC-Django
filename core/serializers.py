@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Category, Product, Brand, Review
-from .serializers import ReviewSerializer
 
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = serializers.SerializerMethodField()
@@ -15,10 +14,20 @@ class CategorySerializer(serializers.ModelSerializer):
         subcategories = obj.category_set.all()  # Better than querying the entire Category model
         return CategorySerializer(subcategories, many=True).data
 
+
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = ['id', 'name']
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()  # Display username instead of ID
+
+    class Meta:
+        model = Review
+        fields = ['id', 'product', 'user', 'rating', 'comment', 'created_at']
+
 
 class ProductSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
@@ -27,13 +36,15 @@ class ProductSerializer(serializers.ModelSerializer):
     reviews = ReviewSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
     total_reviews = serializers.SerializerMethodField()
+    related_products = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
             'id', 'name', 'category', 'brand', 'price',
-            'stock', 'is_on_sale', 'discount_percentage', 'image', 'reviews', 'average_rating', 'total_reviews'
+            'stock', 'is_on_sale', 'discount_percentage', 'image', 'reviews', 'average_rating', 'total_reviews', 'related_products'
         ]
+
     def get_average_rating(self, obj):
         reviews = obj.reviews.all()
         if reviews.exists():
@@ -43,6 +54,12 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_total_reviews(self, obj):
         return obj.reviews.count()
 
+    def get_related_products(self, obj):
+        # Filter products in the same category (excluding the current product)
+        return ProductSerializer(
+            Product.objects.filter(category=obj.category).exclude(id=obj.id)[:4],
+            many=True
+        ).data
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -60,10 +77,3 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']  # `create_user` securely hashes the password
         )
         return user
-
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = ['id', 'product', 'user', 'rating', 'comment', 'created_at']
