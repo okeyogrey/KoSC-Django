@@ -3,6 +3,7 @@ from rest_framework import viewsets, generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Category, Product, Brand, Review
+from django.http import JsonResponse
 from .serializers import (
     CategorySerializer, 
     ProductSerializer, 
@@ -14,6 +15,12 @@ from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductFilter
 
+
+
+def product_list(request):
+    products = list(Product.objects.values())  # Convert queryset to list of dicts
+    return JsonResponse(products, safe=False)
+
 # Category ViewSet - Shows only main categories with their subcategories
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -22,6 +29,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Display only top-level categories in the list
         return Category.objects.filter(parent=None)
+
+
 
 # Brand ViewSet - Includes all brands
 class BrandViewSet(viewsets.ModelViewSet):
